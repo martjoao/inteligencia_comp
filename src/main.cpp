@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "instance"
+#include "instance.h"
 
 using namespace std;
 

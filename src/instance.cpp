@@ -9,12 +9,12 @@ Instance* Instance::parseInstance(string filename) {
 
     Instance* i = new Instance();
 
-    fstream fs;
-    fs.open(filename, fstream::in);
+    ifstream ifs(filename.c_str());
 
-    fs >> i->nGateways;
+    ifs >> i->nGateways;
 
-    fs.close();
+    ifs.close();
+
 
     return i;
 
