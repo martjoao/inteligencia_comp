@@ -1,7 +1,11 @@
 #include <iostream>
 
+#include "instance"
+
 using namespace std;
 
 int main() {
-    cout << "Hello World" << endl;
+    Instance *i = Instance::parseInstance("instances/instance1.txt");
+
+    cout << i->nGateways << endl;
 }
