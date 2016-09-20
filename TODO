@@ -1,0 +1,13 @@
+- Algoritmo para construir solução inicial
+    -aleatório e guloso
+
+
+    Para cada gateway sorteie um cliente de um grupo e alocar.
+    
+    Inserir de forma gulosa os demais clientes
+        Caso nao seja possivel, colocar em um gateway 'dummy' com custo alto
+    
+- Provar que é NP (ou que nao é (ou que nao é))
+    k-cut
+    
+

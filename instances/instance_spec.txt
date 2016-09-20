@@ -9,7 +9,8 @@
 1 2 3 5             //Clients in gateway 1 range
 2 3 4               //Clients in gateway 2 range (up to #Gateways)
 
-1 2 3               //Clients in group 1
-4 5                 //Clients in group 2 (up to #Groups)
+1 2                //Clients in group 1
+4 5                //
+3                  //Clients in group 2 (up to #Groups)
 
 
