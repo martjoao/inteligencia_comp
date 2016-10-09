@@ -4,7 +4,7 @@
 #include <list>
 Group::Group(vector<int> *group, int indexGroup){
     //First we must allocate the adj matrix that will represent the group
-    int sizeGroup = group->size();
+    nClients = group->size();
     clients = group;
 }
 
@@ -53,5 +53,8 @@ float Group::cost(){//Float if we consider the distances
     }
     return grpCost/2;
     /*grpCost sempre vai ser divisivel por 2*/
+}
+
+Group::~Group(){
 
 }
