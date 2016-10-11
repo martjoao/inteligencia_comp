@@ -37,15 +37,15 @@ int Group::nCliques(){
 
 float Group::cost(){//Float if we consider the distances
     /*Will compute the cost from a group*/
-    vector< list<int> > graph;
-    graph.resize(clients->size());
+    vector< list<int> > graph(nClients);
+    //graph.resize(clients->size());
     /*Each list inside the list represents a clique*/
 
     //First we have to build this graph
 
     for(int i = 0; i < clientGateway.size(); i++){
         int nGate = clientGateway[i];
-        graph[i].push_back(i);
+        graph[nGate].push_back(i);
     }
 
     float grpCost = 0;
