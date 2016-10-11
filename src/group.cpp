@@ -8,8 +8,9 @@ Group::Group(vector<int> *group, int indexGroup){
     clients = group;
     clientGateway = vector<int>(nClients, -1);
 }
-;
+
 int Group::getGateway(int nclient){
+
     return clientGateway[nclient];
 }
 

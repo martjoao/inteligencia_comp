@@ -10,7 +10,7 @@
 using namespace std;
 
 int main() {
-    Instance *i = Instance::parseInstance("instances/instance1.txt");
+    Instance *i = Instance::parseInstance("instances/instance2.txt");
     cout << "\n\n" << endl;
     cout << "Num. Gateways: \t" <<  i->nGateways << endl;
     cout << "Num. Clients: \t"  <<  i->nClients << endl;
@@ -74,7 +74,7 @@ int main() {
             //Agora vou tentar  colocar todos os clientes desse grupo nesse gateway
             int capacity = gateCapacities[sGateway];
             for(int k = 0; k < grps[j].clients->size(); k++){
-                int clientDemand = i->clientBandwidth[grps[j].clients->at(k)];
+               int clientDemand = i->clientBandwidth[grps[j].clients->at(k)];
                if(capacity < clientDemand){
                    grps[j].setGateway(k, DUMMY);
                } //Cliente vai para o gateway dummy
@@ -86,7 +86,24 @@ int main() {
         }
     }
 
+
+    cout << endl << endl << "sol: " << endl;
+
+    for (int k = 0; k < i->nGroups; k++) {
+        cout << "Group " << k << endl;
+
+        for (int l = 0; l < grps[k].nClients; l++) {
+            cout << (*(grps[k].clients))[l] << " - " << 
+                grps[k].clientGateway[l] << endl;
+        }
+    }
+
     /*Finalmente, temos que computar o custo dessa solucao*/
-    
+    int solCost = 0;
+    for (int k = 0; k < i->nGroups; k++) {
+        solCost += grps[k].cost();
+    }
+
+    cout << "cost: " << solCost << endl;
 
 }
