@@ -59,6 +59,19 @@ Instance* Instance::parseInstance(string filename) {
     }
 //*/
 
+
+    i->adjMat = new vector<vector<int> >(i->nClients , vector<int>(i->nClients , 0));
+    
+    for (int j = 0; j < i->nGroups; j++) {
+        for (int k = 0; k < i->groups[j].size(); k++) {
+            for (int l = k; l < i->groups[j].size(); l++) {
+                int m = i->groups[j][k] ;
+                int n = i->groups[j][l] ;
+                (*(i->adjMat))[m][n] = (*(i->adjMat))[n][m] = 1;
+            }
+        }
+    }
+
     ifs.close();
 
 

@@ -14,7 +14,10 @@ class Instance {
         vector<int> clientBandwidth;
         vector<vector<int> > gRanges;
         vector<vector<int> > groups;
-        
+        vector<vector<int> >* adjMat;
+
+
+
     private:
         Instance();
 };
