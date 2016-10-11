@@ -14,6 +14,7 @@ class Group{
         void setGateway(int client, int Gateway);
         int getGateway(int client);
         float cost();
+        int nClients;
 };
 
 

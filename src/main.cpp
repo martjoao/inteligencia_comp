@@ -5,6 +5,7 @@
 #include <time.h>
 #include <algorithm>
 
+#define DUMMY -999
 
 using namespace std;
 
@@ -38,6 +39,7 @@ int main() {
     }
 
     //Agora precisamos pegar os groups e colocar eles nos Gateways.
+
     /*Tenho uma matriz de Groups. Vou passar essa matriz para um conjunto de objetos da classe group*/
     vector<Group> grps;
     for(int j = 0; j < i->nGroups; j++){
@@ -49,14 +51,17 @@ int main() {
 
     /*SOLUÇÃO GULOSA*/
     vector<int> occGateways(i->nGateways, 0);
-    vector<int>  gateCapacities(i->nGateways, i->gCapacity);
+    vector<int> gateCapacities(i->nGateways, i->gCapacity);
+
     int foo = 0;
     int nDummy = 0;
+
     for(int j = 0; j < i->nGroups; j++){
         //Cada grupo vai ser sorteado para um gateway aleatório
         srand(j + time(NULL) + foo);
         int sGateway = rand() % i->nGateways;
         //É bom que cada grupo seja selecionado para um gateway distinto
+
         if(occGateways[sGateway] == 1 && 
             find(occGateways.begin(), occGateways.end(), 0) != occGateways.end()){
                 //Tenho que tentar sortear outro gateway. Esse está ocupado e ainda existem gateways desocupados

@@ -6,8 +6,9 @@ Group::Group(vector<int> *group, int indexGroup){
     //First we must allocate the adj matrix that will represent the group
     nClients = group->size();
     clients = group;
+    clientGateway = vector<int>(nClients, -1);
 }
-
+;
 int Group::getGateway(int nclient){
     return clientGateway[nclient];
 }
