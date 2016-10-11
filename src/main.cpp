@@ -5,7 +5,6 @@
 #include <time.h>
 #include <algorithm>
 
-#define DUMMY -999
 
 using namespace std;
 

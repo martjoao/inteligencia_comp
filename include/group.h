@@ -3,6 +3,9 @@
 #include <vector>
 #include "instance.h"
 
+#define DUMMY -999
+
+
 using namespace std;
 class Group{
     public:

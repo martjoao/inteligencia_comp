@@ -2,6 +2,9 @@
 #include "../include/instance.h"
 #include <vector>
 #include <list>
+#include <unordered_map>
+
+
 Group::Group(vector<int> *group, int indexGroup){
     //First we must allocate the adj matrix that will represent the group
     nClients = group->size();
@@ -36,26 +39,45 @@ int Group::nCliques(){
 }
 
 float Group::cost(){//Float if we consider the distances
-    /*Will compute the cost from a group*/
-    vector< list<int> > graph(nClients);
-    //graph.resize(clients->size());
-    /*Each list inside the list represents a clique*/
+    unordered_map<int, int> freq(0);
 
-    //First we have to build this graph
-
-    for(int i = 0; i < clientGateway.size(); i++){
-        int nGate = clientGateway[i];
-        graph[nGate].push_back(i);
+    for (int i = 0; i < clientGateway.size(); i++) {
+        freq[clientGateway[i]]++;
     }
 
-    float grpCost = 0;
-    for(int i = 0; i < graph.size(); i++){
-        //Now we compute grpCost
-        grpCost += graph[i].size() * (clients->size() - graph[i].size());
+    int cost = 0;
+    for (auto k : freq) {
+        if (k.first == DUMMY) {
+            cost += (2000 * k.second);
+        }
+        cost += k.second * (clientGateway.size() - k.second);
     }
-    return grpCost/2;
-    /*grpCost sempre vai ser divisivel por 2*/
+    return cost/2;
+
+
 }
+
+// float Group::cost(){//Float if we consider the distances
+//     /*Will compute the cost from a group*/
+//     vector< list<int> > graph(nClients);
+//     //graph.resize(clients->size());
+//     /*Each list inside the list represents a clique*/
+
+//     //First we have to build this graph
+
+//     for(int i = 0; i < clientGateway.size(); i++){
+//         int nGate = clientGateway[i];
+//         graph[nGate].push_back(i);
+//     }
+
+//     float grpCost = 0;
+//     for(int i = 0; i < graph.size(); i++){
+//         //Now we compute grpCost
+//         grpCost += graph[i].size() * (clients->size() - graph[i].size());
+//     }
+//     return grpCost/2;
+//     /*grpCost sempre vai ser divisivel por 2*/
+// }
 
 Group::~Group(){
 
