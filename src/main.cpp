@@ -8,6 +8,52 @@
 
 using namespace std;
 
+int calcCost(vector<Group> grps){
+    float solCost = 0;
+     for (int k = 0; k < grps.size(); k++) {
+        solCost += grps[k].cost();
+    }
+    return solCost;
+}
+
+bool localSearch(vector<Group> newGrps, vector<int> gateCapacities, int *solCost, Instance *inst){
+    int newCost = 999999;
+    
+    /*Agora vamos fazer um swap nos elementos entre os gateways*/
+    for(int i = 0; i < newGrps.size(); i++){
+        for(int j = i+1; j < newGrps.size();j++){
+            //Vou trocar todos os elementos do grupo I com o grupo J e checar o custo de cada trocar
+            Group *grp1 = &newGrps[i];
+            Group *grp2 = &newGrps[j];
+            //Agora vamos fazer um laço para percorrer os clientes de cada grupo
+            for(int iFoo = 0; iFoo < grp1->nClients; iFoo++){
+                for(int jFoo = 0; jFoo < grp2->nClients; jFoo++){
+                    int clientDemand1 = inst->clientBandwidth[grp1->clients->at(iFoo)];
+                    int clientDemand2 = inst->clientBandwidth[grp2->clients->at(jFoo)];
+                    int gateIFoo = grp1->clientGateway[iFoo];
+                    int gateJFoo = grp2->clientGateway[jFoo];
+                    if( (gateCapacities[gateIFoo] + clientDemand1 - clientDemand2 < 0 ) || 
+                        (gateCapacities[gateJFoo] + clientDemand2 - clientDemand1) < 0){
+                        continue;//Esses clientes não podem ser trocados, isso vai estourar a capacidade dos gates
+                    }
+                    grp1->clientGateway[iFoo] = gateJFoo;
+                    grp2->clientGateway[jFoo] = gateIFoo;
+                    newCost = calcCost(newGrps);
+                    if(newCost < *solCost){
+                        *solCost = newCost;
+                        return true;//Nova solucao :)
+                    } 
+                    else{
+                        grp1->clientGateway[iFoo] = gateIFoo;
+                        grp2->clientGateway[jFoo] = gateJFoo;
+                        //Volta ao estado original :]
+                    }
+                }
+            }
+        }
+    }
+}
+
 double OptimizeClaw(int n, int **w, Instance* inst)
 {
     IloEnv env;
@@ -206,6 +252,7 @@ int main() {
                    grps[j].setGateway(k, sGateway);
                }
             }
+            gateCapacities[sGateway] = capacity;//Capacidade livre do gateway atualizada
         }
     }
 
@@ -222,11 +269,29 @@ int main() {
     }
 
     /*Finalmente, temos que computar o custo dessa solucao*/
-    int solCost = 0;
+    int greedyCost = 0;
     for (int k = 0; k < i->nGroups; k++) {
-        solCost += grps[k].cost();
+        greedyCost += grps[k].cost();
+    }
+    cout << "Greedy cost: " << greedyCost << endl;
+
+    /*Achamos a solução gulosa, agora vamos tentar otimizar essa solução fazendo uma busca local*/
+
+    //Quais são os estados vizinhos?
+    //Qualquer estado que esteja a um movimento de cliente->Gateway
+
+    //Vamos fazer duas partes. Primeiro vamos tentar realizar trocas entre dois clientes de grupos distintos
+    //Depois vamos tentar puxar um cliente pra outro gateway.
+
+    vector<Group> newGrps(grps);//Grupos que vao representar a nova solucao
+    
+    /*LocalSearch OPT*/
+    int numSteps = 0;
+    while(localSearch(newGrps, gateCapacities, &greedyCost, i)){
+        numSteps++;
     }
 
-    cout << "cost: " << solCost << endl;
-
+    cout << "OPT Cost: " << greedyCost << ". Number of steps: " << numSteps << endl;    
 }
+
+
