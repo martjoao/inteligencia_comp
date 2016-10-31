@@ -18,7 +18,7 @@ int calcCost(vector<Group> grps){
 
 bool localSearch(vector<Group> newGrps, vector<int> gateCapacities, int *solCost, Instance *inst){
     int newCost = 999999;
-    
+
     /*Agora vamos fazer um swap nos elementos entre os gateways*/
     for(int i = 0; i < newGrps.size(); i++){
         for(int j = i+1; j < newGrps.size();j++){
@@ -32,7 +32,7 @@ bool localSearch(vector<Group> newGrps, vector<int> gateCapacities, int *solCost
                     int clientDemand2 = inst->clientBandwidth[grp2->clients->at(jFoo)];
                     int gateIFoo = grp1->clientGateway[iFoo];
                     int gateJFoo = grp2->clientGateway[jFoo];
-                    if( (gateCapacities[gateIFoo] + clientDemand1 - clientDemand2 < 0 ) || 
+                    if( (gateCapacities[gateIFoo] + clientDemand1 - clientDemand2 < 0 ) ||
                         (gateCapacities[gateJFoo] + clientDemand2 - clientDemand1) < 0){
                         continue;//Esses clientes não podem ser trocados, isso vai estourar a capacidade dos gates
                     }
@@ -41,8 +41,10 @@ bool localSearch(vector<Group> newGrps, vector<int> gateCapacities, int *solCost
                     newCost = calcCost(newGrps);
                     if(newCost < *solCost){
                         *solCost = newCost;
+                        gateCapacities[gateIFoo] += clientDemand1 - clientDemand2;
+                        gateCapacities[gateJFoo] += clientDemand2 - clientDemand1;
                         return true;//Nova solucao :)
-                    } 
+                    }
                     else{
                         grp1->clientGateway[iFoo] = gateIFoo;
                         grp2->clientGateway[jFoo] = gateJFoo;
@@ -52,12 +54,38 @@ bool localSearch(vector<Group> newGrps, vector<int> gateCapacities, int *solCost
             }
         }
     }
+
+    //Se essa otimizacao nao der certo, vamos tentar de outro jeito.
+    //Vamos apenas trocar um cliente de um gateway para outro.
+    //Para todos os clientes, vamos tentar todos os gateways
+    for(int j = 0; j < newGrps.size(); j++){
+      for(int k = 0; k < newGrps[j].clients->size(); k++){
+        //Agora vou em todos os gateways e vou trocando os clientes
+        int gateway = newGrps[j].clientGateway[k];
+        for(int l = 0; l < inst->nGateways; l++){
+          //Agora vamos trocando e calculando o custo. Vamos ver
+          //O cliente K do grupo J vai para o gateway L
+          int demand = inst->clientBandwidth[newGrps[j].clients->at(k)];
+          if(demand > gateCapacities[l]) continue;
+          else{
+            newGrps[j].clientGateway[k] = l;
+            newCost = calcCost(newGrps);
+            if (newCost < *solCost ){
+              *solCost = newCost;
+              gateCapacities[l] -= demand;
+              return true;
+            }
+          }
+        }
+      }
+    }
+    return false;
 }
 
 double OptimizeClaw(int n, int **w, Instance* inst)
 {
     IloEnv env;
-    
+
     // Criando um modelo
 
     IloModel modelo(env);
@@ -86,7 +114,7 @@ double OptimizeClaw(int n, int **w, Instance* inst)
 
         // Adicionando a FO
         modelo.add(IloMinimize(env, PosEdge + NegEdge));
-        
+
 
 
 
@@ -126,11 +154,11 @@ double OptimizeClaw(int n, int **w, Instance* inst)
 
 
     // Restricoes 1 - Proibi a formação de P4
-    for (int i = 0; i < n; i++) 
+    for (int i = 0; i < n; i++)
     {
-       for (int j = i+1; j < n; j++) 
+       for (int j = i+1; j < n; j++)
        {
-          for (int k = j+1; k < n; k++) 
+          for (int k = j+1; k < n; k++)
           {
          for (int l = k+1; l < n; l++)
          {
@@ -139,19 +167,19 @@ double OptimizeClaw(int n, int **w, Instance* inst)
             modelo.add( x[i][k] + x[j][k] + x[k][l] <= x[i][j] + x[i][l] + x[j][l] + 2);
             modelo.add( x[i][l] + x[j][l] + x[k][l] <= x[i][j] + x[i][k] + x[j][k] + 2);
          }
-          } 
-       }    
+          }
+       }
     }
 
     IloCplex CLAW(modelo);
     //CLAW.exportModel("CLAW.lp");
     CLAW.setParam(IloCplex::Threads, 1);
     CLAW.solve();
-   
+
     cout << "Nodes: " << CLAW.getNnodes() << endl;
     double cost = CLAW.getObjValue();
     cout << "OBJ: " << cost << endl;
-    
+
     for (int i = 0; i < n; i++)
     {
        for (int j = i+1; j < n; j++)
@@ -189,7 +217,7 @@ int main() {
     }
 
     cout << endl;
-    
+
     for (int j = 0; j < i->nGroups; j++) {
         for (int k = 0; k < i->groups[j].size(); k++) {
             cout << i->groups[j][k] << " ";
@@ -198,7 +226,7 @@ int main() {
     }
 
     cout << endl << endl << "ADJ MAT:" << endl;
- 
+
     for (int j = 0; j < i->adjMat->size(); j++) {
         for (int k = 0; k < i->adjMat->size(); k++) {
             cout << (*(i->adjMat))[j][k] << " ";
@@ -231,7 +259,7 @@ int main() {
         int sGateway = rand() % i->nGateways;
         //É bom que cada grupo seja selecionado para um gateway distinto
 
-        if(occGateways[sGateway] == 1 && 
+        if(occGateways[sGateway] == 1 &&
             find(occGateways.begin(), occGateways.end(), 0) != occGateways.end()){
                 //Tenho que tentar sortear outro gateway. Esse está ocupado e ainda existem gateways desocupados
                 foo++;
@@ -263,7 +291,7 @@ int main() {
         cout << "Group " << k << endl;
 
         for (int l = 0; l < grps[k].nClients; l++) {
-            cout << (*(grps[k].clients))[l] << " - " << 
+            cout << (*(grps[k].clients))[l] << " - " <<
                 grps[k].clientGateway[l] << endl;
         }
     }
@@ -284,14 +312,12 @@ int main() {
     //Depois vamos tentar puxar um cliente pra outro gateway.
 
     vector<Group> newGrps(grps);//Grupos que vao representar a nova solucao
-    
+
     /*LocalSearch OPT*/
     int numSteps = 0;
     while(localSearch(newGrps, gateCapacities, &greedyCost, i)){
         numSteps++;
     }
 
-    cout << "OPT Cost: " << greedyCost << ". Number of steps: " << numSteps << endl;    
+    cout << "OPT Cost: " << greedyCost << ". Number of steps: " << numSteps << endl;
 }
-
-
