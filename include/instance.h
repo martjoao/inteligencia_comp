@@ -12,11 +12,10 @@ class Instance {
 
         int nGateways, nClients, nGroups, gCapacity;
         vector<int> clientBandwidth;
+        vector<int> clientGroup;
         vector<vector<int> > gRanges;
         vector<vector<int> > groups;
         vector<vector<int> >* adjMat;
-
-
 
     private:
         Instance();
