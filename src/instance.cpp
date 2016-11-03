@@ -23,7 +23,8 @@ Instance* Instance::parseInstance(string filename) {
     for (int j = 0; j < i->nClients; j++) {
         int cli;
         ifs >> cli;
-        i->clientBandwidth.push_back(cli);    
+        i->clientBandwidth.push_back(cli); 
+        i->clientGroup.push_back(-1);    
     }
 
 
@@ -74,6 +75,12 @@ Instance* Instance::parseInstance(string filename) {
 
     ifs.close();
 
+    for (int j = 0; j < i->nGroups; j++) {
+        
+        for (int k = 0; k < i->groups[j].size(); k++) {
+            i->clientGroup[i->groups[j][k]] = j;
+        }
+    }
 
     return i;
 
