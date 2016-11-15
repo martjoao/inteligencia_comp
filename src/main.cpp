@@ -20,7 +20,7 @@ bool localSearch(vector<Group> solution, vector<int> gateCapacities, int *solCos
     int newCost = 999999;
     int iter = 0;
     vector<Group> newGrps(solution);//Grupos que vao representar a nova solucao
-
+    int oldCost;
     /*Agora vamos fazer um swap nos elementos entre os gateways*/
 
     while(1){
@@ -40,6 +40,7 @@ bool localSearch(vector<Group> solution, vector<int> gateCapacities, int *solCos
       for(int i = 0; i < newGrps.size(); i++){
           for(int j = i+1; j < newGrps.size();j++){
               //Vou trocar todos os elementos do grupo I com o grupo J e checar o custo de cada trocar
+              oldCost = solution[i].cost() + solution[j].cost();
               Group *grp1 = &newGrps[i];
               Group *grp2 = &newGrps[j];
               //Agora vamos fazer um laço para percorrer os clientes de cada grupo
@@ -55,9 +56,10 @@ bool localSearch(vector<Group> solution, vector<int> gateCapacities, int *solCos
                       }
                       grp1->clientGateway[iFoo] = gateJFoo;
                       grp2->clientGateway[jFoo] = gateIFoo;
-                      newCost = calcCost(newGrps);
-                      if(newCost < *solCost){
-                          *solCost = newCost;
+                      //newCost = calcCost(newGrps);
+                      newCost = newGrps[i].cost() + newGrps[j].cost();
+                      if(newCost < oldCost){
+                          oldCost = newCost;
                           gateCapacities[gateIFoo] += clientDemand1 - clientDemand2;
                           gateCapacities[gateJFoo] += clientDemand2 - clientDemand1;
                           foundNextStep = true;//Nova solucao :)
@@ -76,6 +78,7 @@ bool localSearch(vector<Group> solution, vector<int> gateCapacities, int *solCos
       //Vamos apenas trocar um cliente de um gateway para outro.
       //Para todos os clientes, vamos tentar todos os gateways
       for(int j = 0; j < newGrps.size(); j++){
+        oldCost = solution[j].cost();
         for(int k = 0; k < newGrps[j].clients->size(); k++){
           //Agora vou em todos os gateways e vou trocando os clientes
           int gateway = newGrps[j].clientGateway[k];
@@ -87,9 +90,10 @@ bool localSearch(vector<Group> solution, vector<int> gateCapacities, int *solCos
             else{
               int origGateway = newGrps[j].clientGateway[k];
               newGrps[j].clientGateway[k] = l;
-              newCost = calcCost(newGrps);
-              if (newCost < *solCost ){
-                *solCost = newCost;
+              //newCost = calcCost(newGrps);
+              newCost = newGrps[j].cost();
+              if (newCost < oldCost ){
+                oldCost = newCost;
                 gateCapacities[l] -= demand;
                 gateCapacities[origGateway] += demand;
                 foundNextStep =  true;
@@ -100,7 +104,9 @@ bool localSearch(vector<Group> solution, vector<int> gateCapacities, int *solCos
         }
       }
       if(!foundNextStep) break;
+      else *solCost = calcCost(newGrps);
     }
+
 }
 
 /*double OptimizeClaw(int n, int **w, Instance* inst)
@@ -324,15 +330,11 @@ int main() {
     }
     cout << "Greedy cost: " << greedyCost << endl;
 
-    /*Achamos a solução gulosa, agora vamos tentar otimizar essa solução fazendo uma busca local*/
-
-    //Quais são os estados vizinhos?
-    //Qualquer estado que esteja a um movimento de cliente->Gateway
-
-    //Vamos fazer duas partes. Primeiro vamos tentar realizar trocas entre dois clientes de grupos distintos
-    //Depois vamos tentar puxar um cliente pra outro gateway.
 
 
     /*LocalSearch OPT*/
     localSearch(grps, gateCapacities, &greedyCost, i);
+
+    cout << "Opt. Cost : " << greedyCost << endl;
+
 }
