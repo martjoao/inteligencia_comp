@@ -4,110 +4,9 @@
 #include "instance.h"
 #include <time.h>
 #include <algorithm>
-
+#include "localSearch.h"
 
 using namespace std;
-
-int calcCost(vector<Group> grps){
-    float solCost = 0;
-     for (int k = 0; k < grps.size(); k++) {
-        solCost += grps[k].cost();
-    }
-    return solCost;
-}
-
-bool localSearch(vector<Group> solution, vector<int> gateCapacities, int *solCost, Instance *inst){
-    int newCost = 999999;
-    int iter = 0;
-    vector<Group> newGrps(solution);//Grupos que vao representar a nova solucao
-    int oldCost;
-    /*Agora vamos fazer um swap nos elementos entre os gateways*/
-
-    while(1){
-      iter++;
-      bool foundNextStep = false;
-      cout << endl << endl << "Solucao: " << iter << endl;
-
-      for (int k = 0; k < inst->nGroups; k++) {
-          cout << "Group " << k << endl;
-
-          for (int l = 0; l < newGrps[k].nClients; l++) {
-              cout << (*(newGrps[k].clients))[l] << " - " <<
-                  newGrps[k].clientGateway[l] << endl;
-          }
-      }
-
-      for(int i = 0; i < newGrps.size(); i++){
-          for(int j = i+1; j < newGrps.size();j++){
-              //Vou trocar todos os elementos do grupo I com o grupo J e checar o custo de cada trocar
-              oldCost = solution[i].cost() + solution[j].cost();
-              Group *grp1 = &newGrps[i];
-              Group *grp2 = &newGrps[j];
-              //Agora vamos fazer um laço para percorrer os clientes de cada grupo
-              for(int iFoo = 0; iFoo < grp1->nClients; iFoo++){
-                  for(int jFoo = 0; jFoo < grp2->nClients; jFoo++){
-                      int clientDemand1 = inst->clientBandwidth[grp1->clients->at(iFoo)];
-                      int clientDemand2 = inst->clientBandwidth[grp2->clients->at(jFoo)];
-                      int gateIFoo = grp1->clientGateway[iFoo];
-                      int gateJFoo = grp2->clientGateway[jFoo];
-                      if( (gateCapacities[gateIFoo] + clientDemand1 - clientDemand2 < 0 ) ||
-                          (gateCapacities[gateJFoo] + clientDemand2 - clientDemand1) < 0){
-                          continue;//Esses clientes não podem ser trocados, isso vai estourar a capacidade dos gates
-                      }
-                      grp1->clientGateway[iFoo] = gateJFoo;
-                      grp2->clientGateway[jFoo] = gateIFoo;
-                      //newCost = calcCost(newGrps);
-                      newCost = newGrps[i].cost() + newGrps[j].cost();
-                      if(newCost < oldCost){
-                          oldCost = newCost;
-                          gateCapacities[gateIFoo] += clientDemand1 - clientDemand2;
-                          gateCapacities[gateJFoo] += clientDemand2 - clientDemand1;
-                          foundNextStep = true;//Nova solucao :)
-                      }
-                      else{
-                          grp1->clientGateway[iFoo] = gateIFoo;
-                          grp2->clientGateway[jFoo] = gateJFoo;
-                          //Volta ao estado original :]
-                      }
-                  }
-              }
-          }
-      }
-
-      //Se essa otimizacao nao der certo, vamos tentar de outro jeito.
-      //Vamos apenas trocar um cliente de um gateway para outro.
-      //Para todos os clientes, vamos tentar todos os gateways
-      for(int j = 0; j < newGrps.size(); j++){
-        oldCost = solution[j].cost();
-        for(int k = 0; k < newGrps[j].clients->size(); k++){
-          //Agora vou em todos os gateways e vou trocando os clientes
-          int gateway = newGrps[j].clientGateway[k];
-          for(int l = 0; l < inst->nGateways; l++){
-            //Agora vamos trocando e calculando o custo. Vamos ver
-            //O cliente K do grupo J vai para o gateway L
-            int demand = inst->clientBandwidth[newGrps[j].clients->at(k)];
-            if(demand > gateCapacities[l]) continue;
-            else{
-              int origGateway = newGrps[j].clientGateway[k];
-              newGrps[j].clientGateway[k] = l;
-              //newCost = calcCost(newGrps);
-              newCost = newGrps[j].cost();
-              if (newCost < oldCost ){
-                oldCost = newCost;
-                gateCapacities[l] -= demand;
-                gateCapacities[origGateway] += demand;
-                foundNextStep =  true;
-                continue;
-              }else newGrps[j].clientGateway[k] = origGateway;
-            }
-          }
-        }
-      }
-      if(!foundNextStep) break;
-      else *solCost = calcCost(newGrps);
-    }
-
-}
 
 /*double OptimizeClaw(int n, int **w, Instance* inst)
 {
@@ -333,8 +232,19 @@ int main() {
 
 
     /*LocalSearch OPT*/
-    localSearch(grps, gateCapacities, &greedyCost, i);
+    while(localSearchCostOPT(grps, gateCapacities, &greedyCost, i));//Does all the operations :]
 
-    cout << "Opt. Cost : " << greedyCost << endl;
+    cout << "Solucao Otimizada" << endl;
+    for (int k = 0; k < i->nGroups; k++) {
+        cout << "Group " << k << endl;
+
+        for (int l = 0; l < grps[k].nClients; l++) {
+            cout << (*(grps[k].clients))[l] << " - " <<
+                grps[k].clientGateway[l] << endl;
+        }
+    }
+
+    cout << "Opt. Cost : " << calcCost(grps) << endl;
+    //Vou imprimir a solução depois da busca local
 
 }
