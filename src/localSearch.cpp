@@ -161,4 +161,42 @@ bool localSearchCostOPT(vector<Group> &newGrps, vector<int> &gateCapacities, int
     return false;
 }
 
-void ILS()
+void disturb(vector<Group> &grps, vector<int> &gateCapacities, Instance *inst){
+  //Vamos randomizar todos os clients de todos os grupos
+  for(int i =0 ; i < inst->nGateways; i++) gateCapacities[i] = inst->gCapacity;
+  for(int i = 0; i < grps.size();i++){
+    for(int j =0; j < grps[i].nClients; j++){
+      //Aqui eu tenho que aleatorizar a parada
+      int seed = i + j + grps[i].nClients + time(NULL) + grps[i].clientGateway[j];
+      srand(seed);
+      int randomGate = rand() % inst->nGateways;
+      int clientDemand = inst->clientBandwidth[grps[i].clients->at(j)];
+      if (gateCapacities[randomGate] < clientDemand) grps[i].clientGateway[j] = DUMMY;
+      else{
+        grps[i].clientGateway[j] = randomGate;
+        gateCapacities[randomGate] -= clientDemand;
+      }
+    }
+  }
+}
+
+void ILS(vector<Group> &grps, vector<int> &gateCapacities, int *solCost, Instance *inst){
+  //Vamos lá, preciso definir primeiro um KMAX
+  int kmax = 1000;
+  vector<Group> bestGrp(grps);
+  vector<int> newGateCapacities(gateCapacities);
+  int newCost;
+  //Agora vamos lá hein.
+  for(int i = 0; i < kmax; i++){
+    vector<Group> disturbedGrp(bestGrp);
+    cout << "Disturbing solution.." << endl;
+    disturb(disturbedGrp, newGateCapacities, inst);
+    //Agora vamos optimizar >]
+    while(localSearchCostOPT(disturbedGrp, newGateCapacities, &newCost, inst));
+    newCost = calcCost(disturbedGrp);
+    cout << "Disturbed solution cost " << newCost << endl;
+    if(newCost < *solCost) bestGrp.swap(disturbedGrp);
+  }
+  cout << "ILS procedure ended" << endl;
+  cout << "Best solution with cost " << *solCost << endl;
+}
