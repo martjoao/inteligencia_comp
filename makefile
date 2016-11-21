@@ -48,11 +48,16 @@ _OUTPUT = run
 _OUTPUT2 = run2
 
 
+
 1: 
 	$(_CC) src/*.cpp -o $(_OUTPUT) $(_CC_FLAGS)
 
 2:
 	$(_CC) src2/*.cpp -o $(_OUTPUT2) $(_CC_FLAGS)
+
+gen:
+	$(_CC) generator/*.cpp -o gen.out $(_CC_FLAGS)
+
 
 #### regra principal, gera o executavel
 cplex: $(OBJS) 

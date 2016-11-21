@@ -142,6 +142,7 @@ double Optimize(Instance* inst)
     cout << "Yik Variable = 1 if client i is in gateway k" << endl;
     for (int i = 0; i < inst->nClients; i++)
     {
+        cout << i << ":\t";
         for (int k = 0; k < inst->nGateways; k++) {
             cout << TESTE.getValue(y[i][k]) << " ";
         }
@@ -215,14 +216,25 @@ void dumpInstance(const Instance *i) {
 }
 
 
+void printUsage() {
+    cout << "USAGE:\n./run_cplex.out <instance>" << endl;
+}
 
 int main(int argc, char** argv)
 {
+
+    if (argc != 2) {
+        printUsage();
+        return -1;
+    }
+
+    string inFile = string(argv[1]);
+
 	struct timeval tempoAntes;
     struct timeval tempoDepois;
 	srand(time(NULL));
 
-    Instance *inst = Instance::parseInstance("instances/instance2.txt");
+    Instance *inst = Instance::parseInstance(inFile);
     //dumpInstance(inst);
 
 	gettimeofday(&tempoAntes, NULL);

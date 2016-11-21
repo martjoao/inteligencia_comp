@@ -33,7 +33,9 @@ Instance* Instance::parseInstance(string filename) {
     getline(ifs, line);
     getline(ifs, line);
 
+    /*
     //read ranges
+    
     for (int j = 0; j < i->nGateways; j++) {
         i->gRanges.push_back(vector<int>());
 
@@ -43,9 +45,10 @@ Instance* Instance::parseInstance(string filename) {
         while (iss >> n) {
             i->gRanges[j].push_back(n);
         }
-    }    
+    }   
 
     getline(ifs, line);
+    */
 
     //read groups
     for (int j = 0; j < i->nGroups; j++) {
