@@ -57,11 +57,13 @@ double Optimize(Instance* inst)
     // Adding x variables to the model
     for (int i = 0; i < inst->nClients; i++) {
         for (int j = 0; j < inst->nClients; j++) {
-            for (int k = 0; k < inst->nGateways; k++) {
-                if (i != j) {
-                    sprintf(var, "X(%d,%d,%d)", i, j, k);
-                    x[i][j][k].setName(var);
-                    model.add(x[i][j][k]);
+            if ((i < j) && (inst->clientGroup[i] == inst->clientGroup[j])) {
+                //cout << "adding " << i << ": " << inst->clientGroup[i] << " " << j << ":" << inst->clientGroup[j] << endl;
+
+                for (int k = 0; k < inst->nGateways; k++) {
+                        sprintf(var, "X(%d,%d,%d)", i, j, k);
+                        x[i][j][k].setName(var);
+                        model.add(x[i][j][k]);
                 }
             }
         }
@@ -73,7 +75,7 @@ double Optimize(Instance* inst)
 		for (int j = 0; j < inst->nClients; j++) {
 			for (int k = 0; k < inst->nGateways; k++) {
                 //TODO: IF i e j sao do mesmo grupo
-                if (i != j) {
+                if ((i < j) && (inst->clientGroup[i] == inst->clientGroup[j])) {
                     objFunc += x[i][j][k];
                 }
 			}
@@ -84,7 +86,7 @@ double Optimize(Instance* inst)
     model.add(IloMaximize(env, objFunc));
 
 
-    //RESTRICAO 1
+    //RESTRICAO 1 - não pode estourar a demanda
     for (int k = 0; k < inst->nGateways; k++) {
 		IloExpr rest(env);
 		for (int i = 0; i < inst->nClients; i++) {
@@ -92,7 +94,7 @@ double Optimize(Instance* inst)
 		}
 		model.add(rest <= inst->gCapacity);
     }
-
+//*
     //RESTRICAO 2 
 	for (int i = 0; i < inst->nClients; i++) {
 		for (int j = 0; j < inst->nClients; j++) {
@@ -100,11 +102,14 @@ double Optimize(Instance* inst)
 				//if (inst->clientGroup[i] == inst->clientGroup[j])
                 //cout << i << " " << j << " " << k << endl;
 				model.add(y[i][k] >= x[i][j][k]);
+                model.add(y[i][k] >= x[j][i][k]);
+
 			}
 		}
 	}
 
-	//RESTRICAO 3
+//*/
+	//RESTRICAO 3 - Só pode estar em 1 gateway (y)
     for (int i = 0; i < inst->nClients; i++) {
 		IloExpr rest(env);
 		for (int k = 0; k < inst->nGateways; k++) {
@@ -121,7 +126,7 @@ double Optimize(Instance* inst)
     
     if(TESTE.solve()) {
         cout << "FOUND A FEASIBLE SOLUTION" << endl;
-        cout << "status is " << TESTE.getStatus() << endl;
+        cout << "Solution is " << TESTE.getStatus() << endl;
     }
     else {
         cout << "NO FEASIBLE SOLUTION FOUND" << endl;
@@ -132,14 +137,33 @@ double Optimize(Instance* inst)
 
 
 
+    cout << "-----------SOLUTION-----------" << endl;
+
+    cout << "Yik Variable = 1 if client i is in gateway k" << endl;
     for (int i = 0; i < inst->nClients; i++)
     {
         for (int k = 0; k < inst->nGateways; k++) {
-            cout << y[i][k] << " ";
+            cout << TESTE.getValue(y[i][k]) << " ";
         }
         cout << endl;
     }
 
+/*
+    cout << "Xijk Variable = 1 if client i and j E same group and are both on k" << endl;
+    for (int i = 0; i < inst->nClients; i++)
+    {  
+        for (int j = 0; j < inst->nClients; j++)
+        {
+            cout << "X(" << i << ", " << j << "): \t";
+
+            for (int k = 0; k < inst->nGateways; k++) {
+                cout << TESTE.getValue(x[i][j][k]) << "\t";
+            }
+            cout << endl;
+        }
+    }
+
+*/
     return cost;
 }
 
@@ -199,7 +223,7 @@ int main(int argc, char** argv)
 	srand(time(NULL));
 
     Instance *inst = Instance::parseInstance("instances/instance2.txt");
-    dumpInstance(inst);
+    //dumpInstance(inst);
 
 	gettimeofday(&tempoAntes, NULL);
 	Optimize(inst);
@@ -214,6 +238,4 @@ int main(int argc, char** argv)
     
     if(dif.tv_usec != 0)
 		tempo += dif.tv_usec/1000;
-
-	std::cout << "FINAL DA EXECUÇÃO - IMPRIMIR DADOS" << std::endl;
 }
