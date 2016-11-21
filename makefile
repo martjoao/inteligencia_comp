@@ -24,7 +24,7 @@ CPPC = g++
 CCOPT = $(BITS_OPTION) -O3 -g -fPIC -fexceptions -DNDEBUG -DIL_STD -std=c++0x -Wall
 CONCERTINCDIR = $(CONCERTDIR)/include
 CPLEXINCDIR   = $(CPLEXDIR)/include
-CCFLAGS = $(CCOPT) -I$(CPLEXINCDIR) -I$(CONCERTINCDIR) -Iquickc/ -I include/ -DRETURN_CLIQUES_ONE_BY_ONE
+CCFLAGS = $(CCOPT) -I$(CPLEXINCDIR) -I$(CONCERTINCDIR) -Iquickc/ -I include/ -DRETURN_CLIQUES_ONE_BY_ONE -g
 #############################
 
 #### flags do linker

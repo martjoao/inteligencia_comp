@@ -47,8 +47,8 @@ double Optimize(Instance* inst)
       	x[i] = mat;
     }
 
-    for (int i = 0; i <= inst->nClients; i++) {
-        for (int j = 0; j <= inst->nClients; j++) {
+    for (int i = 0; i < inst->nClients; i++) {
+        for (int j = 0; j < inst->nClients; j++) {
             IloBoolVarArray vec (env, inst->nGateways);
             x[i][j] = vec;
         }
@@ -58,6 +58,7 @@ double Optimize(Instance* inst)
     for (int i = 0; i < inst->nClients; i++) {
         for (int j = 0; j < inst->nClients; j++) {
             for (int k = 0; k < inst->nGateways; k++) {
+                //todo if i!=j
 	            sprintf(var, "X(%d,%d,%d)", i, j, k);
 	            x[i][j][k].setName(var);
 	            model.add(x[i][j][k]);
@@ -93,7 +94,8 @@ double Optimize(Instance* inst)
 		for (int j = 0; j < inst->nClients; j++) {
 			for (int k = 0; k < inst->nGateways; k++) {
 				//if (inst->clientGroup[i] == inst->clientGroup[j])
-				model.add(y[i][j] >= x[i][j][k]);
+                //cout << i << " " << j << " " << k << endl;
+				model.add(y[i][k] >= x[i][j][k]);
 			}
 		}
 	}
@@ -110,7 +112,7 @@ double Optimize(Instance* inst)
 
 
     IloCplex TESTE(model);
-    //CLAW.exportModel("CLAW.lp");
+    TESTE.exportModel("teste.lp");
     TESTE.setParam(IloCplex::Threads, 1);
     TESTE.solve();
 
@@ -129,13 +131,62 @@ double Optimize(Instance* inst)
 }
 
 
+void dumpInstance(const Instance *i) {
+    cout << "\n\n" << endl;
+    cout << "Num. Gateways: \t" <<  i->nGateways << endl;
+    cout << "Num. Clients: \t"  <<  i->nClients << endl;
+    cout << "Num. Groups: \t"   <<  i->nGroups << endl;
+    cout << "Gate Capacity: \t"   <<  i->gCapacity << endl << endl;
+
+    for (int j =0; j < i->nClients; j++) {
+        cout << i->clientBandwidth[j] << " ";
+    }
+    cout << endl << endl;
+
+    for (int j = 0; j < i->nGateways; j++) {
+        for (int k = 0; k < i->gRanges[j].size(); k++) {
+            cout << i->gRanges[j][k] << " ";
+        }
+        cout << endl;
+    }
+
+    cout << endl;
+    
+    for (int j = 0; j < i->nGroups; j++) {
+        for (int k = 0; k < i->groups[j].size(); k++) {
+            cout << i->groups[j][k] << " ";
+        }
+        cout << endl;
+    }
+
+    cout << endl << endl << "ADJ MAT:" << endl;
+ 
+    for (int j = 0; j < i->adjMat->size(); j++) {
+        for (int k = 0; k < i->adjMat->size(); k++) {
+            cout << (*(i->adjMat))[j][k] << " ";
+        }
+        cout << endl;
+    }
+
+
+    cout << "CLIENTS IN GROUPS: " << endl;
+    for (int j =0; j < i->nClients; j++) {
+        cout << i->clientGroup[j] << " ";
+    }
+    cout << endl << endl;
+
+}
+
+
+
 int main(int argc, char** argv)
 {
 	struct timeval tempoAntes;
     struct timeval tempoDepois;
 	srand(time(NULL));
 
-    Instance *inst = Instance::parseInstance("../instances/instance2.txt");
+    Instance *inst = Instance::parseInstance("instances/instance2.txt");
+    dumpInstance(inst);
 
 	gettimeofday(&tempoAntes, NULL);
 	Optimize(inst);
