@@ -243,8 +243,11 @@ int main() {
                 grps[k].clientGateway[l] << endl;
         }
     }
-
-    cout << "Opt. Cost : " << calcCost(grps) << endl;
+    int optCost =  calcCost(grps);
+    cout << "Opt. Cost : " << optCost << endl;
     //Vou imprimir a solução depois da busca local
+
+    //Agora vamos otimizar usando o ILS
+    ILS(grps, gateCapacities, &optCost, i);
 
 }
