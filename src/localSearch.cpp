@@ -187,15 +187,18 @@ void ILS(vector<Group> &grps, vector<int> &gateCapacities, int *solCost, Instanc
   vector<int> newGateCapacities(gateCapacities);
   int newCost;
   //Agora vamos lá hein.
+  cout << "Disturbing solutions now" << endl;
   for(int i = 0; i < kmax; i++){
     vector<Group> disturbedGrp(bestGrp);
-    cout << "Disturbing solution.." << endl;
     disturb(disturbedGrp, newGateCapacities, inst);
     //Agora vamos optimizar >]
     while(localSearchCostOPT(disturbedGrp, newGateCapacities, &newCost, inst));
     newCost = calcCost(disturbedGrp);
-    cout << "Disturbed solution cost " << newCost << endl;
-    if(newCost < *solCost) bestGrp.swap(disturbedGrp);
+    if(newCost < *solCost) {
+      cout << "New solution found. Cost: " << newCost << endl << endl;
+      bestGrp.swap(disturbedGrp);
+      *solCost = newCost;
+    }
   }
   cout << "ILS procedure ended" << endl;
   cout << "Best solution with cost " << *solCost << endl;
