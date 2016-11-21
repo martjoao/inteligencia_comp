@@ -58,10 +58,11 @@ double Optimize(Instance* inst)
     for (int i = 0; i < inst->nClients; i++) {
         for (int j = 0; j < inst->nClients; j++) {
             for (int k = 0; k < inst->nGateways; k++) {
-                //todo if i!=j
-	            sprintf(var, "X(%d,%d,%d)", i, j, k);
-	            x[i][j][k].setName(var);
-	            model.add(x[i][j][k]);
+                if (i != j) {
+                    sprintf(var, "X(%d,%d,%d)", i, j, k);
+                    x[i][j][k].setName(var);
+                    model.add(x[i][j][k]);
+                }
             }
         }
     }
@@ -71,7 +72,10 @@ double Optimize(Instance* inst)
   	for (int i = 0; i < inst->nClients; i++) {
 		for (int j = 0; j < inst->nClients; j++) {
 			for (int k = 0; k < inst->nGateways; k++) {
-				objFunc += x[i][j][k];
+                //TODO: IF i e j sao do mesmo grupo
+                if (i != j) {
+                    objFunc += x[i][j][k];
+                }
 			}
 		}
 	}
@@ -114,10 +118,19 @@ double Optimize(Instance* inst)
     IloCplex TESTE(model);
     TESTE.exportModel("teste.lp");
     TESTE.setParam(IloCplex::Threads, 1);
-    TESTE.solve();
+    
+    if(TESTE.solve()) {
+        cout << "FOUND A FEASIBLE SOLUTION" << endl;
+        cout << "status is " << TESTE.getStatus() << endl;
+    }
+    else {
+        cout << "NO FEASIBLE SOLUTION FOUND" << endl;
+    }
 
     double cost = TESTE.getObjValue();
     cout << "OBJ: " << cost << endl;
+
+
 
     for (int i = 0; i < inst->nClients; i++)
     {
