@@ -5,6 +5,7 @@
 #include <time.h>
 #include <algorithm>
 #include "localSearch.h"
+#include <ctime>
 
 using namespace std;
 
@@ -123,14 +124,15 @@ using namespace std;
 
 
 int main() {
-    Instance *i = Instance::parseInstance("instances/instance2.txt");
+    Instance *i = Instance::parseInstance("instances/instance-medium-3.txt");
+    //Instance *i = Instance::parseInstance("instances/instance2.txt");
     cout << "\n\n" << endl;
     cout << "Num. Gateways: \t" <<  i->nGateways << endl;
     cout << "Num. Clients: \t"  <<  i->nClients << endl;
     cout << "Num. Groups: \t"   <<  i->nGroups << endl;
     cout << "Gate Capacity: \t"   <<  i->gCapacity << endl << endl;
 
-    for (int j =0; j < i->nClients; j++) {
+    /*for (int j =0; j < i->nClients; j++) {
         cout << i->clientBandwidth[j] << " ";
     }
     cout << endl << endl;
@@ -140,11 +142,11 @@ int main() {
             cout << i->gRanges[j][k] << " ";
         }
         cout << endl;
-    }
+    }*/
 
-    cout << endl;
+    //cout << endl;
 
-    for (int j = 0; j < i->nGroups; j++) {
+    /*for (int j = 0; j < i->nGroups; j++) {
         for (int k = 0; k < i->groups[j].size(); k++) {
             cout << i->groups[j][k] << " ";
         }
@@ -158,7 +160,7 @@ int main() {
             cout << (*(i->adjMat))[j][k] << " ";
         }
         cout << endl;
-    }
+    }*/
 
 
     //Agora precisamos pegar os groups e colocar eles nos Gateways.
@@ -211,7 +213,7 @@ int main() {
     }
 
 
-    cout << endl << endl << "sol: " << endl;
+    /*cout << endl << endl << "Greedy sol: " << endl;
 
     for (int k = 0; k < i->nGroups; k++) {
         cout << "Group " << k << endl;
@@ -220,21 +222,21 @@ int main() {
             cout << (*(grps[k].clients))[l] << " - " <<
                 grps[k].clientGateway[l] << endl;
         }
-    }
+    }*/
 
     /*Finalmente, temos que computar o custo dessa solucao*/
     int greedyCost = 0;
-    for (int k = 0; k < i->nGroups; k++) {
+    /*for (int k = 0; k < i->nGroups; k++) {
         greedyCost += grps[k].cost();
     }
-    cout << "Greedy cost: " << greedyCost << endl;
+    cout << "Greedy cost: " << greedyCost << endl;*/
 
 
 
     /*LocalSearch OPT*/
-    while(localSearchCostOPT(grps, gateCapacities, &greedyCost, i));//Does all the operations :]
+    while(localSearchCostOPT(grps, gateCapacities, &greedyCost, i));//Does all the operations
 
-    cout << "Solucao Otimizada" << endl;
+    /*cout << "Solucao Otimizada" << endl;
     for (int k = 0; k < i->nGroups; k++) {
         cout << "Group " << k << endl;
 
@@ -242,12 +244,17 @@ int main() {
             cout << (*(grps[k].clients))[l] << " - " <<
                 grps[k].clientGateway[l] << endl;
         }
-    }
+    }*/
     int optCost =  calcCost(grps);
-    cout << "Opt. Cost : " << optCost << endl;
+    cout << "First Solution cost : " << optCost << endl;
     //Vou imprimir a solução depois da busca local
 
     //Agora vamos otimizar usando o ILS
+    clock_t begin = clock();
     ILS(grps, gateCapacities, &optCost, i);
+    clock_t end = clock();
+
+    double totalTime = double(end - begin)/CLOCKS_PER_SEC;
+    cout << endl << "ILS total running time: " << totalTime << "s" << endl;
 
 }

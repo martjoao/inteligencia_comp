@@ -1,4 +1,4 @@
-#include "localSearch.h"
+  #include "localSearch.h"
 #include <iostream>
 #include <stdlib.h>
 #include "group.h"
@@ -6,6 +6,7 @@
 #include <time.h>
 #include <algorithm>
 #include "localSearch.h"
+#include <fstream>
 
 using namespace std;
 
@@ -17,10 +18,18 @@ int calcCost(vector<Group> grps){
     return solCost;
 }
 
+int calcCostMax(vector<Group> grps){
+    int solCost = 0;
+     for (int k = 0; k < grps.size(); k++) {
+        solCost += grps[k].costMax();
+    }
+    return solCost;
+}
+
 bool localSearch(vector<Group> &newGrps, vector<int> &gateCapacities, int *solCost, Instance *inst){
     int newCost = 999999;
     /*Agora vamos fazer um swap nos elementos entre os gateways*/
-    for(int i = 0; i < newGrps.size(); i++){
+    /*for(int i = 0; i < newGrps.size(); i++){
         for(int j = i+1; j < newGrps.size();j++){
             //Vou trocar todos os elementos do grupo I com o grupo J e checar o custo de cada trocar
             Group *grp1 = &newGrps[i];
@@ -53,7 +62,7 @@ bool localSearch(vector<Group> &newGrps, vector<int> &gateCapacities, int *solCo
                 }
             }
         }
-    }
+    }*/
 
     //Se essa otimizacao nao der certo, vamos tentar de outro jeito.
     //Vamos apenas trocar um cliente de um gateway para outro.
@@ -73,6 +82,7 @@ bool localSearch(vector<Group> &newGrps, vector<int> &gateCapacities, int *solCo
             if (newCost < *solCost ){
               *solCost = newCost;
               gateCapacities[l] -= demand;
+              gateCapacities[gateway] += demand;
               return true;
             }else{
               newGrps[j].clientGateway[k] = gateway;
@@ -148,6 +158,7 @@ bool localSearchCostOPT(vector<Group> &newGrps, vector<int> &gateCapacities, int
             if (newCost < oldCost ){
               //*solCost = newCost;
               gateCapacities[l] -= demand;
+              if (gateway != DUMMY) gateCapacities[gateway] += demand;
               return true;
             }else{
               newGrps[j].clientGateway[k] = gateway;
@@ -180,16 +191,49 @@ void disturb(vector<Group> &grps, vector<int> &gateCapacities, Instance *inst){
   }
 }
 
+bool disturb2(vector<Group> &grps, vector<int> &gateCapacities, Instance *inst){
+  //Nessa perturbação eu vou escolher dois clientes aleatórios e trocar os valores dos gateways dos mesmos
+  int grp1 = -1, grp2 = -1;
+
+  while(grp1 == grp2){
+    grp1 = rand() % inst->nGroups;
+    grp2 = rand() % inst->nGroups;
+  }
+  int client1, client2;
+  client1 = rand() % grps[grp1].nClients;
+  client2 = rand() % grps[grp2].nClients;
+  int gate1, gate2, demand1, demand2;
+  demand1 = inst->clientBandwidth[grps[grp1].clients->at(client1)];
+  demand2 = inst->clientBandwidth[grps[grp2].clients->at(client2)];
+  gate1 = grps[grp1].clientGateway[client1];
+  gate2 = grps[grp2].clientGateway[client2];
+
+  if((gateCapacities[gate1]+demand1 < demand2 ) || (gateCapacities[gate2]+ demand2 < demand1)) return false;//Solução não aceitável: viola a capacidade de um gateway
+  else{
+    //Troca os dois clients de gate
+    gateCapacities[gate1] = gateCapacities[gate1] - demand2 + demand1;
+    gateCapacities[gate2] = gateCapacities[gate2] - demand1 + demand2;
+    grps[grp1].clientGateway[client1] = gate2;
+    grps[grp2].clientGateway[client2] = gate1;
+  }
+  return true;
+}
+
 void ILS(vector<Group> &grps, vector<int> &gateCapacities, int *solCost, Instance *inst){
   //Vamos lá, preciso definir primeiro um KMAX
-  int kmax = 10000;
+  int kmax = 100;
   vector<Group> bestGrp(grps);
   vector<int> newGateCapacities(gateCapacities);
   int newCost;
+  std::ofstream out;
+  out.open("result.out");
   //Agora vamos lá hein.
+  srand(time(NULL));
   cout << "Disturbing solutions now" << endl;
   for(int i = 0; i < kmax; i++){
     vector<Group> disturbedGrp(bestGrp);
+    //cout << "Disturbance " << i+1 << endl;
+    //while(!disturb2(disturbedGrp, newGateCapacities, inst));
     disturb(disturbedGrp, newGateCapacities, inst);
     //Agora vamos optimizar >]
     while(localSearchCostOPT(disturbedGrp, newGateCapacities, &newCost, inst));
@@ -204,15 +248,19 @@ void ILS(vector<Group> &grps, vector<int> &gateCapacities, int *solCost, Instanc
 
   //Falta imprimir a solução
 
-  cout << endl << endl << "Solution after ILS" << endl;
+  out << endl << endl << "Solution after ILS" << endl;
+
   for (int k = 0; k < inst->nGroups; k++) {
-      cout << "Group " << k << endl;
+      out << "Group " << k << endl;
 
       for (int l = 0; l < bestGrp[k].nClients; l++) {
-          cout << (*(bestGrp[k].clients))[l] << " - " <<
+          out << (*(bestGrp[k].clients))[l] << " - " <<
               bestGrp[k].clientGateway[l] << endl;
       }
   }
-  cout << "ILS procedure ended" << endl;
+
+  out << "ILS procedure ended" << endl;
+  out << "Best solution with cost " << *solCost << endl;
+  out << "Max function: " << calcCostMax(bestGrp);
   cout << "Best solution with cost " << *solCost << endl;
 }

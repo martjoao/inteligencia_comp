@@ -16,7 +16,8 @@ class Group{
         int nCliques();
         void setGateway(int client, int Gateway);
         int getGateway(int client);
-        float cost();
+        int cost();
+        int costMax();
         int nClients;
 };
 

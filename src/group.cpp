@@ -27,7 +27,7 @@ int Group::nCliques(){
     /*Number of cliques is the number of distinct integers in this list*/
     for(int i = 0; i < clientGateway.size(); i++){
         int nGate = clientGateway[i];
-        bool foundGate = false;        
+        bool foundGate = false;
         if(distInts.empty()) distInts.push_back(nGate);
 
         for(int j = 0; j < distInts.size(); i++){
@@ -38,7 +38,7 @@ int Group::nCliques(){
     return distInts.size();
 }
 
-float Group::cost(){//Float if we consider the distances
+int Group::cost(){//Float if we consider the distances
     unordered_map<int, int> freq(0);
 
     for (int i = 0; i < clientGateway.size(); i++) {
@@ -53,8 +53,23 @@ float Group::cost(){//Float if we consider the distances
         cost += k.second * (clientGateway.size() - k.second);
     }
     return cost/2;
+}
 
+int Group::costMax(){//Float if we consider the distances
+    unordered_map<int, int> freq(0);
 
+    for (int i = 0; i < clientGateway.size(); i++) {
+        freq[clientGateway[i]]++;
+    }
+
+    int cost = 0;
+    for (auto k : freq) {
+        if (k.first == DUMMY) {
+            cost -= (2000 * k.second);
+        }
+        cost += (k.second * (k.second - 1 ))/2;
+    }
+    return cost;
 }
 
 // float Group::cost(){//Float if we consider the distances
