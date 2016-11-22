@@ -182,7 +182,7 @@ void disturb(vector<Group> &grps, vector<int> &gateCapacities, Instance *inst){
 
 void ILS(vector<Group> &grps, vector<int> &gateCapacities, int *solCost, Instance *inst){
   //Vamos lá, preciso definir primeiro um KMAX
-  int kmax = 1000;
+  int kmax = 10000;
   vector<Group> bestGrp(grps);
   vector<int> newGateCapacities(gateCapacities);
   int newCost;
@@ -199,6 +199,19 @@ void ILS(vector<Group> &grps, vector<int> &gateCapacities, int *solCost, Instanc
       bestGrp.swap(disturbedGrp);
       *solCost = newCost;
     }
+  }
+
+
+  //Falta imprimir a solução
+
+  cout << endl << endl << "Solution after ILS" << endl;
+  for (int k = 0; k < inst->nGroups; k++) {
+      cout << "Group " << k << endl;
+
+      for (int l = 0; l < bestGrp[k].nClients; l++) {
+          cout << (*(bestGrp[k].clients))[l] << " - " <<
+              bestGrp[k].clientGateway[l] << endl;
+      }
   }
   cout << "ILS procedure ended" << endl;
   cout << "Best solution with cost " << *solCost << endl;
