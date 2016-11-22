@@ -1,0 +1,61 @@
+Tried aggregator 1 time.
+MIP Presolve eliminated 1800 rows and 901 columns.
+Reduced MIP has 388 rows, 240 columns, and 846 nonzeros.
+Reduced MIP has 240 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Probing time =    0.00 sec.
+Tried aggregator 1 time.
+Presolve time =    0.01 sec.
+Found feasible solution after 0.01 sec.  Objective = 33.0000
+Probing time =    0.00 sec.
+Clique table members: 1450.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: none, using 1 thread.
+Root relaxation solution time =    0.00 sec.
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                           33.0000                    286     --- 
+      0     0       61.0000   165       33.0000       61.0000      286   84.85%
+*     0+    0                           37.0000       61.0000      286   64.86%
+      0     0       61.0000   160       37.0000       Cuts: 8      299   64.86%
+      0     0       61.0000   210       37.0000       Cuts: 6      321   64.86%
+      0     0       61.0000   185       37.0000   ZeroHalf: 2      323   64.86%
+*     0+    0                           38.0000       61.0000      323   60.53%
+      0     0       61.0000   215       38.0000   ZeroHalf: 9      334   60.53%
+      0     2       61.0000   210       38.0000       61.0000      334   60.53%
+Elapsed real time =   0.13 sec. (tree size =  0.00 MB, solutions = 3)
+
+Zero-half cuts applied:  10
+
+Root node processing (before b&c):
+  Real time             =    0.13
+Sequential b&c:
+  Real time             =    0.04
+                          -------
+Total (root+branch&cut) =    0.16 sec.
+FOUND A FEASIBLE SOLUTION
+Solution is Optimal
+OBJ: 38
+-----------SOLUTION-----------
+Yik Variable = 1 if client i is in gateway k
+0:	1 0 0 
+1:	1 0 0 
+2:	1 0 0 
+3:	1 0 0 
+4:	1 0 0 
+5:	0 1 0 
+6:	0 1 0 
+7:	0 1 0 
+8:	0 1 0 
+9:	0 0 1 
+10:	0 0 1 
+11:	0 0 1 
+12:	0 0 1 
+13:	0 0 1 
+14:	0 0 1 
+15:	0 0 1 
+16:	0 1 0 
+17:	0 1 0 
+18:	1 0 0 
